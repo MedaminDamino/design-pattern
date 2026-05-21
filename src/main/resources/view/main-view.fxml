@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.MainController"
+            styleClass="root-pane">
+
+    <fx:define>
+        <ToggleGroup fx:id="shapeToggleGroup"/>
+    </fx:define>
+
+    <!-- ═══ TOP: Classic Menu Bar ════════════════════════════════════════ -->
+    <top>
+        <VBox>
+            <MenuBar styleClass="menu-bar">
+                <Menu text="File">
+                    <MenuItem text="New"   onAction="#onNewDrawing"/>
+                    <MenuItem text="Open"  onAction="#onOpen"/>
+                    <MenuItem text="Save"  onAction="#onSave"/>
+                    <MenuItem text="Save As" onAction="#onSaveAs"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Exit"  onAction="#onExit"/>
+                </Menu>
+                <Menu text="Edit">
+                    <MenuItem text="Undo"  onAction="#onUndo"/>
+                    <MenuItem text="Redo"  onAction="#onRedo"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Delete Selected" onAction="#onDelete"/>
+                    <MenuItem text="Clear Canvas"    onAction="#onClear"/>
+                </Menu>
+                <Menu text="Graph">
+                    <MenuItem text="Add Node" onAction="#onMenuNode"/>
+                    <MenuItem text="Add Edge" onAction="#onMenuEdge"/>
+                </Menu>
+                <Menu text="Pathfinding">
+                    <MenuItem text="Find Path (Dijkstra)" onAction="#onFindPath"/>
+                    <MenuItem text="Clear Path" onAction="#onClearPath"/>
+                </Menu>
+                <Menu text="Options">
+                    <!-- We can place Logger selection here -->
+                    <MenuItem text="Set Logger to Console" onAction="#onLoggerConsole"/>
+                    <MenuItem text="Set Logger to File"    onAction="#onLoggerFile"/>
+                    <MenuItem text="Set Logger to DB"      onAction="#onLoggerDB"/>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem text="About"/>
+                </Menu>
+            </MenuBar>
+            
+            <!-- We need a place for the drawing name field, maybe right under the menu like a tool bar? 
+                 Actually, old Windows apps had the filename in the Window Title. We can't change the OS title easily from FXML, 
+                 so we'll put a small classic toolbar here for the name and logger. -->
+            <ToolBar style="-fx-background-color: win-bg; -fx-padding: 4; -fx-border-color: win-white win-dark win-dark win-white; -fx-border-width: 1;">
+                <Label text="File Name:" style="-fx-text-fill: win-black;"/>
+                <TextField fx:id="drawingNameField" promptText="untitled" styleClass="text-field-win95" prefWidth="150"/>
+                <Separator styleClass="separator"/>
+                <Label text="Logger:" style="-fx-text-fill: win-black;"/>
+                <ComboBox fx:id="logStrategyCombo" prefWidth="100" styleClass="combo-box-win95"/>
+                <Separator styleClass="separator"/>
+                <Label text="Storage:" style="-fx-text-fill: win-black;"/>
+                <ComboBox fx:id="storageCombo" prefWidth="100" styleClass="combo-box-win95"/>
+                <Separator styleClass="separator"/>
+                <Label text="Algorithm:" style="-fx-text-fill: win-black;"/>
+                <ComboBox fx:id="algorithmCombo" prefWidth="100" styleClass="combo-box-win95"/>
+            </ToolBar>
+        </VBox>
+    </top>
+
+    <!-- ═══ LEFT: Classic Tools Palette ══════════════════════════════════ -->
+    <left>
+        <VBox styleClass="tools-palette" spacing="4" minWidth="66" maxWidth="66" alignment="TOP_CENTER">
+            <!-- 2-column layout for classic Paint tools -->
+            <GridPane hgap="2" vgap="2" alignment="CENTER">
+
+                <!-- ── Row 0 ─ Select (Cursor) | Fill Bucket ──────────── -->
+                <ToggleButton fx:id="selectBtn" GridPane.columnIndex="0" GridPane.rowIndex="0" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Arrow cursor – black silhouette -->
+                            <SVGPath content="M 2,1 L 2,14 L 5,11 L 7,16 L 10,15 L 8,10 L 12,10 Z" fill="#1a1a1a"/>
+                            <!-- Arrow cursor – white inner body -->
+                            <SVGPath content="M 3,3 L 3,12 L 5.5,9.5 L 7.5,14 L 8.8,13.4 L 6.8,9 L 10.5,9 Z" fill="white"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Select Shape"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="fillBtn" GridPane.columnIndex="1" GridPane.rowIndex="0" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Cyan paint spill / puddle -->
+                            <SVGPath content="M 4,9 L 2,13 C 1,15 5,16 6,14 L 5,11 Z" fill="#00b8b8" stroke="#006060" strokeWidth="0.6"/>
+                            <!-- Amber/gold bucket body -->
+                            <SVGPath content="M 10,2 L 15,7 L 9,13 L 4,8 Z" fill="#d4870a" stroke="#1a1a1a" strokeWidth="0.8"/>
+                            <!-- Gold highlight on bucket face -->
+                            <SVGPath content="M 10.5,3 L 14,6.5" fill="transparent" stroke="#f0b840" strokeWidth="1.2"/>
+                            <!-- Handle peg -->
+                            <SVGPath content="M 12,1 L 15,4" fill="transparent" stroke="#1a1a1a" strokeWidth="1.2"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Fill with Color"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 1 ─ Line | Arrow ────────────────────────────── -->
+                <ToggleButton fx:id="lineBtn" GridPane.columnIndex="0" GridPane.rowIndex="1" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Square endpoint handles -->
+                            <SVGPath content="M 1,13 L 4,13 L 4,16 L 1,16 Z M 13,1 L 16,1 L 16,4 L 13,4 Z" fill="#555555"/>
+                            <!-- Main diagonal stroke -->
+                            <SVGPath content="M 2.5,14.5 L 14.5,2.5" fill="transparent" stroke="#333333" strokeWidth="2" strokeLineCap="ROUND"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Line"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="arrowBtn" GridPane.columnIndex="1" GridPane.rowIndex="1" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Arrow shaft – retro blue -->
+                            <SVGPath content="M 3,15 L 11,7" fill="transparent" stroke="#1a56c4" strokeWidth="2" strokeLineCap="ROUND"/>
+                            <!-- Filled arrowhead triangle -->
+                            <SVGPath content="M 14,2 L 9.5,5.5 L 12,8 Z" fill="#1a56c4" stroke="#0d3a8c" strokeWidth="0.5"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Arrow"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 2 ─ Rectangle | Circle ─────────────────────── -->
+                <ToggleButton fx:id="rectBtn" GridPane.columnIndex="0" GridPane.rowIndex="2" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Drop shadow (offset gray) -->
+                            <SVGPath content="M 3,5 L 15,5 L 15,15 L 3,15 Z" fill="transparent" stroke="#b0b0b0" strokeWidth="1"/>
+                            <!-- Retro blue outline -->
+                            <SVGPath content="M 2,4 L 14,4 L 14,14 L 2,14 Z" fill="transparent" stroke="#1a56c4" strokeWidth="1.5"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Rectangle"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="circleBtn" GridPane.columnIndex="1" GridPane.rowIndex="2" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Shadow circle -->
+                            <SVGPath content="M 3.5,9.5 A 6,6 0 0 1 15.5,9.5 A 6,6 0 0 1 3.5,9.5 Z" fill="transparent" stroke="#b0b0b0" strokeWidth="0.8"/>
+                            <!-- Teal circle outline -->
+                            <SVGPath content="M 3,9 A 6,6 0 0 1 15,9 A 6,6 0 0 1 3,9 Z" fill="transparent" stroke="#008b8b" strokeWidth="1.5"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Circle"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 3 ─ Ellipse | Triangle ─────────────────────── -->
+                <ToggleButton fx:id="ellipseBtn" GridPane.columnIndex="0" GridPane.rowIndex="3" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <SVGPath content="M 1,9 A 8,5 0 0 1 17,9 A 8,5 0 0 1 1,9 Z" fill="transparent" stroke="#2e8b57" strokeWidth="1.5"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Ellipse"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="triangleBtn" GridPane.columnIndex="1" GridPane.rowIndex="3" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Warm orange filled triangle -->
+                            <SVGPath content="M 9,2 L 16,15 L 2,15 Z" fill="#e8780a" stroke="#1a1a1a" strokeWidth="0.8"/>
+                            <!-- Inner highlight edge -->
+                            <SVGPath content="M 9,4 L 14.5,14" fill="transparent" stroke="#f5a040" strokeWidth="0.8"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Triangle"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 4 ─ Diamond | Pentagon ─────────────────────── -->
+                <ToggleButton fx:id="diamondBtn" GridPane.columnIndex="0" GridPane.rowIndex="4" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <SVGPath content="M 9,1 L 17,9 L 9,17 L 1,9 Z" fill="transparent" stroke="#0097a7" strokeWidth="1.5"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Diamond"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="pentagonBtn" GridPane.columnIndex="1" GridPane.rowIndex="4" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <SVGPath content="M 9,2 L 15.7,6.8 L 13.1,14.7 L 4.9,14.7 L 2.3,6.8 Z" fill="transparent" stroke="#7b52ab" strokeWidth="1.5"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Pentagon"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 5 ─ Hexagon | Trapezoid ─────────────────────── -->
+                <ToggleButton fx:id="hexagonBtn" GridPane.columnIndex="0" GridPane.rowIndex="5" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <SVGPath content="M 9,2 L 15.1,5.5 L 15.1,12.5 L 9,16 L 2.9,12.5 L 2.9,5.5 Z" fill="transparent" stroke="#2e7d32" strokeWidth="1.5"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Hexagon"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="trapezoidBtn" GridPane.columnIndex="1" GridPane.rowIndex="5" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <SVGPath content="M 4,4 L 13,4 L 16,14 L 1,14 Z" fill="transparent" stroke="#c62828" strokeWidth="1.5"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Trapezoid"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 6 ─ Star ────────────────────────────────────── -->
+                <ToggleButton fx:id="starBtn" GridPane.columnIndex="0" GridPane.rowIndex="6" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <!-- Gold 5-point star: outer r=7, inner r=3, center (9,9) -->
+                        <SVGPath content="M 9,2 L 10.8,6.6 L 15.7,6.8 L 11.9,9.9 L 13.1,14.7 L 9,12 L 4.9,14.7 L 6.1,9.9 L 2.3,6.8 L 7.2,6.6 Z" fill="#f9a825" stroke="#b87800" strokeWidth="0.8"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Star"/></tooltip>
+                </ToggleButton>
+
+                <!-- ── Row 7 ─ Graph Node | Graph Edge ────────────────── -->
+                <ToggleButton fx:id="nodeBtn" GridPane.columnIndex="0" GridPane.rowIndex="7" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Violet filled circle – graph node -->
+                            <SVGPath content="M 3,9 A 6,6 0 0 1 15,9 A 6,6 0 0 1 3,9 Z" fill="#5c35cc" stroke="#2a0a8c" strokeWidth="1"/>
+                            <!-- White shine arc at top-left -->
+                            <SVGPath content="M 5.5,6 A 2.5,2 0 0 1 10.5,5.5" fill="transparent" stroke="white" strokeWidth="1.2"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Graph Node"/></tooltip>
+                </ToggleButton>
+
+                <ToggleButton fx:id="edgeBtn" GridPane.columnIndex="1" GridPane.rowIndex="7" toggleGroup="$shapeToggleGroup" styleClass="tool-btn">
+                    <graphic>
+                        <Group>
+                            <!-- Connection line -->
+                            <SVGPath content="M 5,5 L 13,13" fill="transparent" stroke="#444444" strokeWidth="1.5"/>
+                            <!-- Source node (top-left) -->
+                            <SVGPath content="M 1,4 A 3,3 0 0 1 7,4 A 3,3 0 0 1 1,4 Z" fill="#5c35cc" stroke="#2a0a8c" strokeWidth="0.8"/>
+                            <!-- Target node (bottom-right) -->
+                            <SVGPath content="M 10,13 A 3,3 0 0 1 16,13 A 3,3 0 0 1 10,13 Z" fill="#5c35cc" stroke="#2a0a8c" strokeWidth="0.8"/>
+                        </Group>
+                    </graphic>
+                    <tooltip><Tooltip text="Graph Edge"/></tooltip>
+                </ToggleButton>
+
+            </GridPane>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- Bottom area of tool palette: Active Color Indicator -->
+            <VBox alignment="CENTER" spacing="6" styleClass="color-indicator-box" style="-fx-padding: 6; -fx-border-color: win-dark win-white win-white win-dark; -fx-border-width: 1;">
+                <Pane fx:id="activeColorPane" prefWidth="42" prefHeight="42">
+                    <!-- Fill color (background) -->
+                    <Rectangle fx:id="activeFillRect"   x="14" y="14" width="24" height="24" fill="white" stroke="#808080" strokeWidth="1" strokeType="INSIDE"/>
+                    <!-- Stroke color (foreground) -->
+                    <Rectangle fx:id="activeStrokeRect" x="4" y="4" width="24" height="24" fill="black" stroke="#808080" strokeWidth="1" strokeType="INSIDE"/>
+                </Pane>
+            </VBox>
+            <Label text="Left: Stroke&#10;Right: Fill" textAlignment="CENTER" style="-fx-font-size:10px; -fx-text-fill:win-black;"/>
+        </VBox>
+    </left>
+
+    <!-- ═══ CENTER: Canvas Area ══════════════════════════════════════════ -->
+    <center>
+        <StackPane styleClass="canvas-wrapper">
+            <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="scroll-pane" style="-fx-border-color: win-dark win-white win-white win-dark; -fx-border-width: 1;">
+                <StackPane alignment="TOP_LEFT" style="-fx-padding: 4; -fx-background-color: win-dark;">
+                    <Pane fx:id="shapePane"
+                          minWidth="400" minHeight="300"
+                          styleClass="canvas-pane"
+                          onMousePressed="#onCanvasMousePressed"
+                          onMouseDragged="#onCanvasMouseDragged"
+                          onMouseReleased="#onCanvasMouseReleased"/>
+                </StackPane>
+            </ScrollPane>
+        </StackPane>
+    </center>
+
+    <!-- ═══ RIGHT: Logs Panel ════════════════════════════════════════════ -->
+    <right>
+        <VBox styleClass="sidebar" prefWidth="200" minWidth="200" maxWidth="200" spacing="4">
+            <Label text="Action Log:" style="-fx-text-fill: win-black; -fx-font-family: 'MS Sans Serif';"/>
+            <ListView fx:id="actionLogView" VBox.vgrow="ALWAYS" styleClass="log-list"/>
+        </VBox>
+    </right>
+
+    <!-- ═══ BOTTOM: Color Palette & Status Bar ═══════════════════════════ -->
+    <bottom>
+        <VBox>
+            <!-- Classic Color Palette -->
+            <HBox styleClass="color-palette-area" spacing="4" alignment="CENTER_LEFT">
+                <HBox fx:id="colorGrid" spacing="1" style="-fx-border-color: win-dark win-white win-white win-dark; -fx-border-width: 1; -fx-padding: 1; -fx-background-color: win-bg;">
+                    <!-- Color buttons will be dynamically injected here in initialize() -->
+                </HBox>
+            </HBox>
+            
+            <!-- Status Bar -->
+            <HBox styleClass="status-bar" alignment="CENTER_LEFT">
+                <HBox styleClass="status-panel" prefWidth="250">
+                    <Label fx:id="statusLabel" text="Ready" styleClass="status-text"/>
+                </HBox>
+                <HBox styleClass="status-panel" prefWidth="120">
+                    <Label fx:id="modeLabel" text="Tool: Select" styleClass="status-text"/>
+                </HBox>
+                <HBox styleClass="status-panel" HBox.hgrow="ALWAYS">
+                    <Label fx:id="shapeCountLabel" text="Shapes: 0" styleClass="status-text"/>
+                </HBox>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

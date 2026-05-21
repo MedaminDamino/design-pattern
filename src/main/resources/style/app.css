@@ -1,0 +1,297 @@
+/* ══ DESIGN TOKENS — Warm Retro-Brown / Vintage Coffee Palette ══════════
+   Modern polished remake of classic Win32 UI using warm mocha/beige tones.
+   ══════════════════════════════════════════════════════════════════════════ */
+.root {
+    /* Warm Retro-Brown Palette */
+    win-bg:       #eae2d5;   /* vintage cream / warm sand panel background */
+    win-white:    #fdfcf7;   /* warm soft off-white (canvas & highlights) */
+    win-black:    #2b201a;   /* soft dark espresso (text & crisp outlines) */
+    win-dark:     #9c8978;   /* muted warm gray-brown / soft taupe shadow */
+    win-light:    #f5eedf;   /* creamy warm highlight / bevel light edge */
+    win-blue:     #5c4636;   /* retro coffee-espresso (title bars, selections) */
+
+    -fx-font-family: "Tahoma", "MS Sans Serif", "Arial", sans-serif;
+    -fx-font-size: 11px;
+    -fx-background-color: win-bg;
+}
+
+/* ══ ROOT PANE ══════════════════════════════════════════════════════════════ */
+.root-pane { -fx-background-color: win-bg; }
+
+/* ══ MENU BAR ═══════════════════════════════════════════════════════════════ */
+.menu-bar {
+    -fx-background-color: win-bg;
+    -fx-border-color: transparent transparent win-dark transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0;
+}
+.menu-bar > .container > .menu-button {
+    -fx-background-color: transparent;
+    -fx-padding: 3 6 3 6;
+    -fx-text-fill: win-black;
+}
+.menu-bar > .container > .menu-button:hover,
+.menu-bar > .container > .menu-button:showing {
+    -fx-background-color: win-blue;
+    -fx-text-fill: win-white;
+}
+
+/* Dropdown menus */
+.menu-item {
+    -fx-background-color: win-bg;
+    -fx-padding: 3 10 3 10;
+    -fx-text-fill: win-black;
+}
+.menu-item:focused {
+    -fx-background-color: win-blue;
+    -fx-text-fill: win-white;
+}
+.context-menu {
+    -fx-background-color: win-bg;
+    -fx-border-color: win-white win-black win-black win-white;
+    -fx-border-width: 2;
+    -fx-padding: 2;
+    -fx-effect: none;
+}
+.separator-menu-item .line {
+    -fx-border-color: win-dark transparent win-white transparent;
+    -fx-border-width: 1 0 1 0;
+}
+
+/* ══ CLASSIC OUTSET BORDER MIXIN ════════════════════════════════════════════ */
+.outset-border {
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1;
+}
+.outset-border-thick {
+    -fx-border-color: win-white win-black win-black win-white, win-bg win-dark win-dark win-bg;
+    -fx-border-width: 1, 1;
+    -fx-border-insets: 0, 1;
+}
+
+/* ══ CLASSIC INSET BORDER MIXIN ═════════════════════════════════════════════ */
+.inset-border {
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+}
+.inset-border-thick {
+    -fx-border-color: win-dark win-white win-white win-dark, win-black win-bg win-bg win-black;
+    -fx-border-width: 1, 1;
+    -fx-border-insets: 0, 1;
+}
+
+/* ══ LEFT TOOLBAR (TOOLS PALETTE) ═══════════════════════════════════════════ */
+.tools-palette {
+    -fx-background-color: win-bg;
+    -fx-padding: 4;
+}
+
+/* MS Paint style tool buttons */
+.tool-btn {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1;
+    -fx-padding: 3;                  /* slightly more breathing room for icons */
+    -fx-alignment: center;
+    -fx-content-display: graphic-only;
+    -fx-cursor: hand;
+    -fx-min-width: 30; -fx-max-width: 30; -fx-pref-width: 30;
+    -fx-min-height: 30; -fx-max-height: 30; -fx-pref-height: 30;
+}
+.tool-btn:hover {
+    -fx-background-color: #e3cca8;   /* soft caramel hover highlight */
+    -fx-border-color: win-light win-dark win-dark win-light;
+}
+.tool-btn:pressed, .tool-btn:selected {
+    -fx-background-color: #c9a87a;   /* warm amber pressed-in feedback */
+    -fx-border-color: win-dark win-light win-light win-dark;
+    -fx-padding: 4 2 2 4;            /* pixel-push down+right */
+}
+
+/* ══ CANVAS ═════════════════════════════════════════════════════════════════ */
+/* The outer area is dark gray, the canvas itself is white with an inset border */
+.canvas-wrapper {
+    -fx-background-color: win-dark;
+    -fx-padding: 4;
+}
+.canvas-pane {
+    -fx-background-color: win-white;
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+}
+
+/* ══ BOTTOM COLOR PALETTE ═══════════════════════════════════════════════════ */
+.color-palette-area {
+    -fx-background-color: win-bg;
+    -fx-padding: 4;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* The primary/secondary color indicator box */
+.color-indicator-box {
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+    -fx-background-color: win-bg;
+    -fx-min-width: 40; -fx-pref-width: 40;
+    -fx-min-height: 40; -fx-pref-height: 40;
+}
+
+/* Individual color squares in the palette */
+.color-square {
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+    -fx-min-width: 20; -fx-pref-width: 20; -fx-max-width: 20;
+    -fx-min-height: 20; -fx-pref-height: 20; -fx-max-height: 20;
+}
+
+/* ══ RIGHT SIDEBAR / LOGS ═══════════════════════════════════════════════════ */
+.sidebar {
+    -fx-background-color: win-bg;
+    -fx-padding: 4;
+}
+.log-list {
+    -fx-background-color: win-white;
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+}
+.log-list .list-cell {
+    -fx-background-color: win-white;
+    -fx-text-fill: win-black;
+    -fx-font-family: "MS Sans Serif", "Arial";
+    -fx-font-size: 11px;
+    -fx-padding: 2;
+}
+.log-list .list-cell:selected {
+    -fx-background-color: win-blue;
+    -fx-text-fill: win-white;
+}
+
+/* ══ SCROLL BAR ═════════════════════════════════════════════════════════════ */
+.scroll-bar {
+    -fx-background-color: win-bg;
+}
+.scroll-bar .track {
+    -fx-background-color: #d5c9b8;   /* warm parchment scroll track */
+    -fx-border-color: win-dark transparent transparent win-dark;
+}
+.scroll-bar .thumb {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1;
+}
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1;
+    -fx-padding: 3;
+}
+.scroll-bar .increment-button:pressed, .scroll-bar .decrement-button:pressed {
+    -fx-border-color: win-dark win-white win-white win-dark;
+}
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: win-black;
+}
+
+/* ══ BUTTONS (Standard dialog/form buttons) ═════════════════════════════════ */
+.btn-win95 {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-black win-black win-white, win-bg win-dark win-dark win-bg;
+    -fx-border-width: 1, 1;
+    -fx-border-insets: 0, 1;
+    -fx-text-fill: win-black;
+    -fx-padding: 4 12 4 12;
+    -fx-font-family: "Tahoma", "MS Sans Serif";
+    -fx-font-size: 11px;
+}
+.btn-win95:pressed {
+    -fx-border-color: win-black win-white win-white win-black, win-dark win-bg win-bg win-dark;
+    -fx-padding: 5 11 3 13; /* push down effect */
+}
+
+/* ══ TEXT FIELD ═════════════════════════════════════════════════════════════ */
+.text-field-win95 {
+    -fx-background-color: win-white;
+    -fx-background-radius: 0;
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+    -fx-padding: 3;
+    -fx-text-fill: win-black;
+}
+
+/* ══ COMBO BOX ══════════════════════════════════════════════════════════════ */
+.combo-box-win95 {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1;
+    -fx-padding: 1;
+}
+.combo-box-win95 .list-cell {
+    -fx-text-fill: win-black;
+    -fx-background-color: win-white;
+}
+.combo-box-win95 .arrow-button {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1;
+}
+.combo-box-win95 .arrow-button:pressed {
+    -fx-border-color: win-dark win-white win-white win-dark;
+}
+.combo-box-win95 .arrow {
+    -fx-background-color: win-black;
+}
+
+/* ══ STATUS BAR ═════════════════════════════════════════════════════════════ */
+.status-bar {
+    -fx-background-color: win-bg;
+    -fx-padding: 2 4 2 4;
+    -fx-border-color: win-white win-dark win-dark win-white;
+    -fx-border-width: 1 0 0 0;
+    -fx-spacing: 4;
+}
+.status-panel {
+    -fx-border-color: win-dark win-white win-white win-dark;
+    -fx-border-width: 1;
+    -fx-padding: 2 6 2 6;
+    -fx-background-color: win-bg;
+}
+.status-text {
+    -fx-text-fill: win-black;
+    -fx-font-family: "MS Sans Serif";
+    -fx-font-size: 11px;
+}
+
+/* ══ TAB PANE (If needed) ═══════════════════════════════════════════════════ */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: win-bg;
+}
+.tab-pane .tab {
+    -fx-background-color: win-bg;
+    -fx-background-radius: 0;
+    -fx-border-color: win-white win-dark win-bg win-white;
+    -fx-border-width: 1;
+    -fx-padding: 2 6 2 6;
+}
+.tab-pane .tab:selected {
+    -fx-border-color: win-white win-dark win-bg win-white;
+    -fx-background-color: win-bg;
+    -fx-padding: 4 8 4 8; /* active tab slightly taller */
+}
+
+/* ══ TOOLTIP ════════════════════════════════════════════════════════════ */
+.tooltip {
+    -fx-background-color: #fffbea; /* warm pale cream tooltip */
+    -fx-text-fill: win-black;
+    -fx-background-radius: 0;
+    -fx-border-color: win-black;
+    -fx-border-width: 1;
+    -fx-font-size: 11px;
+    -fx-effect: dropshadow(gaussian, rgba(43,32,26,0.4), 2, 0, 1, 1);
+}
