@@ -87,7 +87,7 @@ if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
 # ── Step 3: Run the Application ───────────────────────────────────────────
 Write-Host ""
 Write-Host "=== Compiling and Launching Drawing App... ===" -ForegroundColor Cyan
-Write-Host "Running command: $mvnExe javafx:run"
+Write-Host "Running command: $mvnExe clean javafx:run"
 Write-Host ""
 
-& $mvnExe javafx:run
+& $mvnExe clean javafx:run
