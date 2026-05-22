@@ -109,29 +109,49 @@ public class MainController {
     // ── Initialisation ────────────────────────────────────────────────────────
     @FXML
     public void initialize() {
+        boolean dbConnected = false;
+        drawingService = new DrawingService();
+        graphService = new service.GraphService(drawingService);
+
         try {
             drawingRepo = new DrawingRepository();
             shapeRepo = new ShapeRepository();
             logRepo = new LogRepository();
-            drawingService = new DrawingService();
-            graphService = new service.GraphService(drawingService);
             storageContext = new StorageContext(new DatabaseDrawingStorageStrategy(drawingRepo, shapeRepo));
+            dbConnected = true;
         } catch (Exception e) {
-            AlertUtil.showError("DB Error", "Cannot connect to database: " + e.getMessage());
-            return;
+            System.err.println("Database connection failed. Falling back to File Storage mode. Error: " + e.getMessage());
+            storageContext = new StorageContext(new FileDrawingStorageStrategy());
+            
+            // Show a friendly warning to the user asynchronously so it doesn't block JavaFX thread startup
+            javafx.application.Platform.runLater(() -> {
+                AlertUtil.showInfo("Database Offline",
+                    "Could not connect to the MySQL database.\n\n" +
+                    "The application will run in File Storage mode.\n" +
+                    "To use database storage and logger, please start MySQL (e.g. via XAMPP) and restart the application.");
+            });
         }
 
         // Default logger = console
         logger.setStrategy(new ConsoleLoggingStrategy());
 
         // Logging strategy combo
-        logStrategyCombo.getItems().addAll("Console", "File", "Database");
+        if (dbConnected) {
+            logStrategyCombo.getItems().addAll("Console", "File", "Database");
+        } else {
+            logStrategyCombo.getItems().addAll("Console", "File");
+        }
         logStrategyCombo.setValue("Console");
         logStrategyCombo.setOnAction(e -> onLogStrategyChanged());
 
         // Storage strategy combo
-        storageCombo.getItems().addAll("Database", "File");
-        storageCombo.setValue("Database");
+        if (dbConnected) {
+            storageCombo.getItems().addAll("Database", "File");
+            storageCombo.setValue("Database");
+        } else {
+            storageCombo.getItems().addAll("File");
+            storageCombo.setValue("File");
+        }
         storageCombo.setOnAction(e -> onStorageStrategyChanged());
 
         // Graph algorithm combo
@@ -327,6 +347,10 @@ public class MainController {
  
     @FXML
     private void onLoggerDB() {
+        if (logRepo == null) {
+            AlertUtil.showError("Database Logger", "Database is not connected. Cannot use Database logger.");
+            return;
+        }
         if (!"Database".equals(logStrategyCombo.getValue())) {
             logStrategyCombo.setValue("Database");
         }
@@ -524,7 +548,7 @@ public class MainController {
         }
 
         ShapeType type = getSelectedType();
-        if (type == null || type == ShapeType.NODE || type == ShapeType.EDGE)
+        if (type == null || type == ShapeType.NODE || type == ShapeType.EDGE || type == ShapeType.FILL)
             return;
 
         double rawEx = e.getX();
@@ -534,13 +558,13 @@ public class MainController {
 
         double ex = rawEx;
         double ey = rawEy;
-        double minSize = 100.0;
 
-        if (Math.abs(dx) < minSize) {
-            ex = (dx >= 0) ? pressX + minSize : pressX - minSize;
-        }
-        if (Math.abs(dy) < minSize) {
-            ey = (dy >= 0) ? pressY + minSize : pressY - minSize;
+        // If the user just clicked without dragging (or dragged less than 5px),
+        // we create a default-sized shape (100.0px) for visibility.
+        // Otherwise, if they dragged, we use their exact mouse coordinates!
+        if (Math.abs(dx) < 5.0 && Math.abs(dy) < 5.0) {
+            ex = pressX + 100.0;
+            ey = pressY + 100.0;
         }
 
         if (previewShape != null) {
@@ -672,6 +696,12 @@ public class MainController {
 
     private void onLogStrategyChanged() {
         String choice = logStrategyCombo.getValue();
+        if (choice == null) return;
+        if ("Database".equals(choice) && logRepo == null) {
+            AlertUtil.showError("Database Logger", "Database is not connected. Cannot use Database logger.");
+            logStrategyCombo.setValue("Console");
+            return;
+        }
         LoggingStrategy newStrategy = switch (choice) {
             case "File" -> new FileLoggingStrategy();
             case "Database" -> new DatabaseLoggingStrategy(logRepo);
@@ -684,6 +714,12 @@ public class MainController {
 
     private void onStorageStrategyChanged() {
         String choice = storageCombo.getValue();
+        if (choice == null) return;
+        if ("Database".equals(choice) && (drawingRepo == null || shapeRepo == null)) {
+            AlertUtil.showError("Database Storage", "Database is not connected. Cannot use Database storage.");
+            storageCombo.setValue("File");
+            return;
+        }
         DrawingStorageStrategy newStrategy = switch (choice) {
             case "File" -> new FileDrawingStorageStrategy();
             default -> new DatabaseDrawingStorageStrategy(drawingRepo, shapeRepo);
@@ -818,16 +854,15 @@ public class MainController {
         if (type == null)
             return null;
 
-        // Prevent 0-size bounds and enforce min size (100.0px) for visibility
+        // Prevent 0-size bounds by ensuring a tiny minimum size (2.0px) for preview.
         double dx = ex - sx;
         double dy = ey - sy;
-        double minSize = 100.0;
 
-        if (Math.abs(dx) < minSize) {
-            ex = (dx >= 0) ? sx + minSize : sx - minSize;
+        if (Math.abs(dx) < 2.0) {
+            ex = (dx >= 0) ? sx + 2.0 : sx - 2.0;
         }
-        if (Math.abs(dy) < minSize) {
-            ey = (dy >= 0) ? sy + minSize : sy - minSize;
+        if (Math.abs(dy) < 2.0) {
+            ey = (dy >= 0) ? sy + 2.0 : sy - 2.0;
         }
 
         DrawableShape ds = shapeFactory.createShape(type, sx, sy, ex, ey, "none", "none");

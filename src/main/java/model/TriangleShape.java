@@ -9,11 +9,20 @@ public class TriangleShape extends PolygonShape {
 
     @Override
     protected double[] generatePoints(double x, double y, double w, double h) {
-        // apex center-top, bottom-left, bottom-right
-        return new double[]{
-            x + w / 2, y,
-            x,         y + h,
-            x + w,     y + h
-        };
+        if (endY < startY) {
+            // Triangle pointing downwards
+            return new double[]{
+                x + w / 2, y + h,  // apex center-bottom
+                x,         y,      // top-left
+                x + w,     y       // top-right
+            };
+        } else {
+            // Triangle pointing upwards
+            return new double[]{
+                x + w / 2, y,      // apex center-top
+                x,         y + h,  // bottom-left
+                x + w,     y + h   // bottom-right
+            };
+        }
     }
 }

@@ -1,52 +1,93 @@
-# run.ps1 – Compile and launch the JavaFX Drawing Application
+# run.ps1 – Auto-configure and launch the JavaFX Drawing Application
 # Usage: .\run.ps1
-#
-# The JavaFX SDK path contains an accented character (é) which causes issues
-# with some tools. This script resolves the path via Get-Item wildcard and
-# builds the full classpath including SQLite JDBC from the local .m2 repo.
 
 $ErrorActionPreference = "Stop"
 
-$javaExe  = "C:\Program Files\Java\jdk-23\bin\java.exe"
-$javacExe = "C:\Program Files\Java\jdk-23\bin\javac.exe"
-$mvnExe   = "C:\Program Files\JetBrains\IntelliJ IDEA 2025.2.4\plugins\maven\lib\maven3\bin\mvn.cmd"
+Write-Host "==============================================" -ForegroundColor Green
+Write-Host "🎨 JavaFX Drawing Application Bootstrapper" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Green
+Write-Host ""
+
 $projectDir = $PSScriptRoot
 
-# ── Resolve JavaFX SDK path (wildcard bypasses encoding issue with é) ──────
-$glid2Root = Join-Path $projectDir ".."
-$sdkParent = (Get-Item (Join-Path $glid2Root "Syst*") |
-              Where-Object { $_.PSIsContainer } |
-              Select-Object -First 1).FullName
-$javafxLib = Join-Path $sdkParent "javafx-sdk-25\lib"
-
-if (-not (Test-Path $javafxLib)) {
-    Write-Host "[ERROR] JavaFX SDK not found at: $javafxLib" -ForegroundColor Red
+# ── Step 1: Verify Java Installation ───────────────────────────────────────
+Write-Host "Checking Java installation..." -ForegroundColor Cyan
+if (Get-Command java -ErrorAction SilentlyContinue) {
+    $oldEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    $javaVersionStr = & java -version 2>&1 | Select-Object -First 1
+    $ErrorActionPreference = $oldEAP
+    Write-Host "Found Java: $javaVersionStr" -ForegroundColor Green
+    
+    # Robustly find the real JDK root directory (bypassing symlinked Oracle javapath)
+    $javaRootDir = ""
+    if (Test-Path "C:\Program Files\Java") {
+        $jdkFolder = Get-ChildItem -Path "C:\Program Files\Java" -Directory -Filter "jdk-*" | Select-Object -First 1
+        if ($jdkFolder) {
+            $javaRootDir = $jdkFolder.FullName
+        }
+    }
+    if (-not $javaRootDir -and (Test-Path "HKLM:\SOFTWARE\JavaSoft\JDK")) {
+        $javaRootDir = (Get-ItemProperty -Path "HKLM:\SOFTWARE\JavaSoft\JDK").JavaHome
+    }
+    if (-not $javaRootDir) {
+        $javaBinDir = Split-Path (Get-Command java).Source -Parent
+        $javaRootDir = Split-Path $javaBinDir -Parent
+    }
+    
+    $env:JAVA_HOME = $javaRootDir
+    Write-Host "Setting JAVA_HOME to: $env:JAVA_HOME" -ForegroundColor Gray
+} else {
+    Write-Host "[ERROR] Java Runtime Environment not found. Please install JDK 21 or higher." -ForegroundColor Red
     exit 1
 }
 
-# ── Build full classpath using Maven ─────────────────────────────────────
+# ── Step 2: Locate or Download Apache Maven ───────────────────────────────
 Write-Host ""
-Write-Host "=== Step 1: Building and collecting dependencies... ===" -ForegroundColor Cyan
-$env:JAVA_HOME = "C:\Program Files\Java\jdk-23"
-& $mvnExe compile dependency:build-classpath "-Dmdep.outputFile=cp.txt" "-q"
-if ($LASTEXITCODE -ne 0) { Write-Host "[ERROR] Compilation or dependency resolution failed." -ForegroundColor Red; exit 1 }
+Write-Host "Locating Maven..." -ForegroundColor Cyan
+$mvnExe = "mvn"
 
-$classes = Join-Path $projectDir "target\classes"
-$depsCp = Get-Content (Join-Path $projectDir "cp.txt") -ErrorAction SilentlyContinue
-$cp = if ($depsCp) { "$classes;$depsCp" } else { $classes }
-Write-Host "Compilation OK." -ForegroundColor Green
+# Check if global mvn exists
+if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
+    # If not global, check if we already downloaded a portable version
+    $portableMvnDir = Join-Path $projectDir ".maven"
+    $portableMvnBin = Join-Path $portableMvnDir "apache-maven-3.9.6\bin\mvn.cmd"
+    
+    if (Test-Path $portableMvnBin) {
+        Write-Host "Found portable Maven at: $portableMvnBin" -ForegroundColor Green
+        $mvnExe = $portableMvnBin
+    } else {
+        Write-Host "Maven not found in system PATH." -ForegroundColor Yellow
+        Write-Host "Automatically downloading a portable Apache Maven to build the project..." -ForegroundColor Cyan
+        
+        New-Item -ItemType Directory -Force -Path $portableMvnDir | Out-Null
+        $zipPath = Join-Path $portableMvnDir "maven.zip"
+        $mavenUrl = "https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip"
+        
+        Write-Host "Downloading Maven from $mavenUrl..." -ForegroundColor Gray
+        Invoke-WebRequest -Uri $mavenUrl -OutFile $zipPath
+        
+        Write-Host "Extracting Maven..." -ForegroundColor Gray
+        Expand-Archive -Path $zipPath -DestinationPath $portableMvnDir -Force
+        
+        Remove-Item $zipPath -Force
+        
+        if (Test-Path $portableMvnBin) {
+            Write-Host "Portable Maven successfully set up!" -ForegroundColor Green
+            $mvnExe = $portableMvnBin
+        } else {
+            Write-Host "[ERROR] Failed to set up portable Maven." -ForegroundColor Red
+            exit 1
+        }
+    }
+} else {
+    Write-Host "Found global Maven in system PATH." -ForegroundColor Green
+}
 
-# ── Step 3: Launch ────────────────────────────────────────────────────────
+# ── Step 3: Run the Application ───────────────────────────────────────────
 Write-Host ""
-Write-Host "=== Step 2: Launching Drawing App... ===" -ForegroundColor Cyan
-Write-Host "  JDK 23:  $javaExe"
-Write-Host "  FX lib:  $javafxLib"
-Write-Host "  Deps cp: $depsCp"
+Write-Host "=== Compiling and Launching Drawing App... ===" -ForegroundColor Cyan
+Write-Host "Running command: $mvnExe javafx:run"
 Write-Host ""
 
-& $javaExe `
-    "--module-path" $javafxLib `
-    "--add-modules"  "javafx.controls,javafx.fxml" `
-    "--add-opens"    "javafx.fxml/javafx.fxml=ALL-UNNAMED" `
-    "-cp"            $cp `
-    "app.MainApp"
+& $mvnExe javafx:run

@@ -30,6 +30,9 @@ public final class OpenDrawingDialog {
         Dialog<Drawing> dialog = new Dialog<>();
         dialog.setTitle("Open");
         dialog.setHeaderText(null);
+        try {
+            dialog.getDialogPane().getStylesheets().add(OpenDrawingDialog.class.getResource("/style/app.css").toExternalForm());
+        } catch (Exception ignored) {}
 
         ButtonType openBtn   = new ButtonType("Open",   ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -49,25 +52,6 @@ public final class OpenDrawingDialog {
         root.setPadding(new Insets(8));
         root.setPrefWidth(380);
 
-        // ── Top header (Look in:) ─────────────────────────────────────────
-        HBox topRow = new HBox(6);
-        topRow.setAlignment(Pos.CENTER_LEFT);
-        Label lookInLbl = new Label("Look in:");
-        lookInLbl.setStyle("-fx-text-fill: " + C_BLACK + ";");
-        
-        ComboBox<String> lookInCombo = new ComboBox<>();
-        lookInCombo.getItems().add("Database");
-        lookInCombo.getSelectionModel().selectFirst();
-        lookInCombo.setPrefWidth(200);
-        lookInCombo.setStyle(
-            "-fx-background-color: " + C_WHITE + ";" +
-            "-fx-border-color: " + C_DARK + " " + C_LIGHT + " " + C_LIGHT + " " + C_DARK + ";" +
-            "-fx-border-width: 1;" +
-            "-fx-background-radius: 0;" +
-            "-fx-text-fill: " + C_BLACK + ";"
-        );
-        topRow.getChildren().addAll(lookInLbl, lookInCombo);
-        root.getChildren().add(topRow);
 
         // ── Project list ──────────────────────────────────────────────────
         ListView<Drawing> list = new ListView<>(FXCollections.observableArrayList(drawings));
@@ -157,30 +141,16 @@ public final class OpenDrawingDialog {
         root.getChildren().addAll(list, nameRow, typeRow);
         dialog.getDialogPane().setContent(root);
 
-        // ── Button bar styling (Win95 outsets) ────────────────────────────
+        // ── Button bar styling (Win95 outsets via CSS) ───────────────────
         Button openB   = (Button) dialog.getDialogPane().lookupButton(openBtn);
         Button cancelB = (Button) dialog.getDialogPane().lookupButton(cancelBtn);
         
-        String win95BtnStyle = 
-            "-fx-background-color: " + C_BG + ";" +
-            "-fx-border-color: " + C_LIGHT + " " + C_BLACK + " " + C_BLACK + " " + C_LIGHT + ","
-                               + C_BG + " " + C_DARK + " " + C_DARK + " " + C_BG + ";" +
-            "-fx-border-width: 1, 1;" +
-            "-fx-border-insets: 0, 1;" +
-            "-fx-background-radius: 0;" +
-            "-fx-text-fill: " + C_BLACK + ";" +
-            "-fx-font-family: 'MS Sans Serif';" +
-            "-fx-font-size: 11px;" +
-            "-fx-padding: 3 12 3 12;";
-            
-        openB.setStyle(win95BtnStyle);
-        cancelB.setStyle(win95BtnStyle);
-
-        // Pressed effect via internal listeners (inline since it's a dialog)
-        openB.setOnMousePressed(e -> openB.setStyle(win95BtnStyle + "-fx-border-color: " + C_BLACK + " " + C_LIGHT + " " + C_LIGHT + " " + C_BLACK + "," + C_DARK + " " + C_BG + " " + C_BG + " " + C_DARK + "; -fx-padding: 4 11 2 13;"));
-        openB.setOnMouseReleased(e -> openB.setStyle(win95BtnStyle));
-        cancelB.setOnMousePressed(e -> cancelB.setStyle(win95BtnStyle + "-fx-border-color: " + C_BLACK + " " + C_LIGHT + " " + C_LIGHT + " " + C_BLACK + "," + C_DARK + " " + C_BG + " " + C_BG + " " + C_DARK + "; -fx-padding: 4 11 2 13;"));
-        cancelB.setOnMouseReleased(e -> cancelB.setStyle(win95BtnStyle));
+        if (openB != null) {
+            openB.getStyleClass().add("btn-win95");
+        }
+        if (cancelB != null) {
+            cancelB.getStyleClass().add("btn-win95");
+        }
 
         dialog.setResultConverter(btn -> btn == openBtn ? list.getSelectionModel().getSelectedItem() : null);
 
