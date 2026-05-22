@@ -1,6 +1,7 @@
 package repository;
 
 import model.*;
+import patterns.template.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

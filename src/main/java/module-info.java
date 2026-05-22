@@ -13,23 +13,35 @@ module drawingapp {
     opens controller to javafx.fxml;
     opens model      to javafx.base, javafx.fxml;
     opens graph      to javafx.base, javafx.fxml;
-    opens factory    to javafx.fxml;
-    opens command    to javafx.fxml;
-    opens logging    to javafx.fxml;
     opens repository to javafx.fxml;
     opens util       to javafx.fxml;
     opens service    to javafx.fxml;
-    opens storage    to javafx.fxml;
+
+    // ── Design Pattern packages ──────────────────────────────────────────────
+    opens patterns.command              to javafx.graphics, javafx.fxml;
+    opens patterns.factory              to javafx.fxml;
+    opens patterns.singleton            to javafx.fxml;
+    opens patterns.facade               to javafx.fxml;
+    opens patterns.template             to javafx.base, javafx.fxml;
+    opens patterns.strategy.logging     to javafx.fxml;
+    opens patterns.strategy.storage     to javafx.fxml;
+    opens patterns.strategy.pathfinding to javafx.fxml;
 
     exports app;
     exports controller;
     exports model;
     exports graph;
-    exports factory;
-    exports command;
-    exports logging;
     exports repository;
     exports util;
     exports service;
-    exports storage;
+
+    // ── Design Pattern packages ──────────────────────────────────────────────
+    exports patterns.command;
+    exports patterns.factory;
+    exports patterns.singleton;
+    exports patterns.facade;
+    exports patterns.template;
+    exports patterns.strategy.logging;
+    exports patterns.strategy.storage;
+    exports patterns.strategy.pathfinding;
 }

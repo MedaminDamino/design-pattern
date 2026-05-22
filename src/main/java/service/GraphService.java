@@ -1,12 +1,12 @@
 package service;
 
-import command.AddShapeCommand;
-import command.CommandManager;
+import patterns.command.AddShapeCommand;
+import patterns.command.CommandManager;
 import graph.Graph;
 import graph.GraphEdge;
 import graph.GraphNode;
 import javafx.scene.layout.Pane;
-import logging.LoggerContext;
+import patterns.singleton.LoggerContext;
 import model.Drawing;
 
 import java.util.List;
@@ -45,11 +45,11 @@ public class GraphService {
     public void handleEdgeCreationOrUpdate(GraphNode source, GraphNode target, double weight, Pane pane) {
         GraphEdge existing = graph.findEdgeBetween(source, target);
         if (existing != null) {
-            command.UpdateEdgeWeightCommand cmd = new command.UpdateEdgeWeightCommand(existing, weight);
+            patterns.command.UpdateEdgeWeightCommand cmd = new patterns.command.UpdateEdgeWeightCommand(existing, weight);
             drawingService.executeCommand(cmd);
         } else {
             GraphEdge edge = new GraphEdge(source, target, weight);
-            drawingService.executeCommand(new command.AddGraphEdgeCommand(drawingService.getCurrentDrawing(), edge, pane, this));
+            drawingService.executeCommand(new patterns.command.AddGraphEdgeCommand(drawingService.getCurrentDrawing(), edge, pane, this));
         }
     }
 }

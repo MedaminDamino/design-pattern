@@ -1,7 +1,7 @@
 package service;
 
-import command.Command;
-import command.CommandManager;
+import patterns.command.Command;
+import patterns.command.CommandManager;
 import model.DrawableShape;
 import model.Drawing;
 import repository.IDrawingRepository;

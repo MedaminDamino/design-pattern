@@ -1,7 +1,12 @@
 package controller;
 
-import command.*;
-import factory.*;
+import patterns.command.*;
+import patterns.factory.*;
+import patterns.singleton.LoggerContext;
+import patterns.strategy.logging.*;
+import patterns.strategy.pathfinding.*;
+import patterns.strategy.storage.*;
+import patterns.facade.AlertUtil;
 import graph.*;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -14,12 +19,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
-import logging.*;
 import model.*;
 import repository.*;
 import service.DrawingService;
-import storage.*;
-import util.AlertUtil;
 import util.OpenDrawingDialog;
 
 import java.io.IOException;
